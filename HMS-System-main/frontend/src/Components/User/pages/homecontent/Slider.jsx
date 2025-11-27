@@ -43,7 +43,7 @@ const StyledHeroCaption = styled("div")`
 `;
 
 const Screen = () => {
-    const words = ["health", "sushi", "steak"];
+    const words = ["Health"];
     const [currentIndex, setCurrentIndex] = React.useState(0);
     
     React.useEffect(() => {
