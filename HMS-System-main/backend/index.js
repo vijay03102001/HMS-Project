@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 require("dotenv").config();
 
 const connectDB = require("./db/connection");
@@ -17,7 +18,12 @@ const patient_router = require("./router/patient");
 const app = express();
 
 // Middlewares
-app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
+app.use(cors({ 
+  credentials: true, 
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.CLIENT_URL 
+    : "http://localhost:3000" 
+}));
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -35,15 +41,26 @@ app.get("/", (req, res) => {
   res.send("HMS Backend Server is Running...");
 });
 
+// Serve frontend in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, '../frontend/build')));
+  
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/build/index.html'));
+  });
+}
+
 // Start Server after DB connection
 const PORT = process.env.PORT || 8080;
 
 connectDB()
   .then(() => {
     app.listen(PORT, "0.0.0.0", () => {
-      console.log(` Server is running on http://127.0.0.1:${PORT}`);
+      console.log(`Server is running on http://127.0.0.1:${PORT}`);
     });
   })
   .catch((err) => {
     console.error(" Failed to connect to the database:", err.message);
   });
+
+
